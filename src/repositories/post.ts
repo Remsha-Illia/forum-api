@@ -1,52 +1,30 @@
 import type { Post } from '../domain/post/entity.js'
 import type { AddPost, Repository } from '../domain/post/repository.js'
+import type { db } from '../prisma/db.js'
 
-export function createPostRepository(): Repository {
-    let posts: Post[] = [
-    {
-        id: 1,
-        title: 'cat',
-        content: 'may',
-        author: 'cat',
-        category: 'cat'
-    },
-    {
-        id: 2,
-        title: 'peaple',
-        content: 'hello',
-        author: 'peaple',
-        category: 'peaple'
-    },
-    ]
+export function createPostRepository(database: typeof db): Repository {
+    const posts = database.orm.public.Post
 
-    function getAll(category: string, take: number) {
-        let result = [...posts]
+    async function getAll(category: string, take: number): Promise<Post[]> {
+        let query = posts
 
         if (category) {
-            result = result.filter(post => post.category === category)
+            query = query.where({ category })
         }
         if (take) {
-            result = result.slice(0, take)
+            query = query.limit(take)
         }
 
-        return result
+        return query.orderBy(post => post.id.asc()).all()
     }
 
-    function getById(id: number) {
-        return posts.find(post => post.id === id)
+    async function getById(id: number): Promise<Post | undefined> {
+        return (await posts.first({ id })) ?? undefined
     }
 
-    async function addPost(post: AddPost) {
-        const lastPost = posts[posts.length - 1]
-        const newPost: Post = {
-            id: lastPost ? lastPost.id + 1 : 0,
-            ...post
-        }
-
-        posts = [...posts, newPost]
-        return newPost
+    async function AddPost(post: AddPost): Promise<Post> {
+        return posts.create(post)
     }
 
-    return { getAll, getById, addPost }
+    return { getAll, getById, AddPost }
 }
-

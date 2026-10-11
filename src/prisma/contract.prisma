@@ -1,0 +1,10 @@
+// use prisma-8
+
+
+model Post {
+  id: Int
+  title: String
+  content: String
+  author: String
+  category: String
+}
