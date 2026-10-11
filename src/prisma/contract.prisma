@@ -2,9 +2,9 @@
 
 
 model Post {
-  id: Int
-  title: String
-  content: String
-  author: String
-  category: String
+  id Int
+  title String
+  content String
+  author String
+  category String
 }
